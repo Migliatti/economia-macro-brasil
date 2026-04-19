@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { IndicatorCard } from "@/components/IndicatorCard";
 import { HistoricalChart } from "@/components/HistoricalChart";
 import { CopomPanel } from "@/components/CopomPanel";
-import { getLatestAndHistory, getSeriesRange } from "@/lib/bcb";
+import { getSeriesRange } from "@/lib/bcb";
 import {
   INDICATOR_ORDER,
   INDICATORS,
@@ -13,14 +13,8 @@ import type { SeriesPoint } from "@/lib/bcb";
 export const revalidate = 3600;
 
 async function loadData() {
-  const snapshotEntries = await Promise.all(
-    INDICATOR_ORDER.map(async (key) => {
-      const sparkDays = INDICATORS[key].frequency === "monthly" ? 366 : 45;
-      const snap = await getLatestAndHistory(key, sparkDays);
-      return [key, snap] as const;
-    }),
-  );
-
+  // Fetch 180 days (6M preset) so the server-side seed matches the chart's
+  // default period exactly — and 180 days covers the Selic/CDI delta window too.
   const historyEntries = await Promise.all(
     INDICATOR_ORDER.map(async (key) => {
       const data = await getSeriesRange(key, 180);
@@ -29,10 +23,6 @@ async function loadData() {
   );
 
   return {
-    snapshots: Object.fromEntries(snapshotEntries) as Record<
-      IndicatorKey,
-      Awaited<ReturnType<typeof getLatestAndHistory>>
-    >,
     histories: Object.fromEntries(historyEntries) as Record<
       IndicatorKey,
       SeriesPoint[]
@@ -41,7 +31,7 @@ async function loadData() {
 }
 
 export default async function Home() {
-  const { snapshots, histories } = await loadData();
+  const { histories } = await loadData();
 
   return (
     <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-5 p-5 md:p-8">
@@ -49,14 +39,14 @@ export default async function Home() {
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {INDICATOR_ORDER.map((key) => {
-          const snap = snapshots[key];
+          const series = histories[key];
+          const latest = series[series.length - 1];
           return (
             <IndicatorCard
               key={key}
               meta={INDICATORS[key]}
-              latest={snap.latest}
-              previous={snap.previous}
-              history={snap.history}
+              latest={latest}
+              history={series}
             />
           );
         })}

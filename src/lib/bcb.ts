@@ -47,13 +47,18 @@ export async function getSeriesRange(
   key: IndicatorKey,
   days: number,
 ): Promise<SeriesPoint[]> {
-  const { sgsCode, frequency } = INDICATORS[key];
-  // For monthly series, extend the window so we capture enough monthly points.
-  const windowDays = frequency === "monthly" ? Math.max(days, 366) : days;
+  const meta = INDICATORS[key];
+  // For monthly series keep a minimum of 90 days (~3 data points) so the
+  // chart is never empty on the "30D" preset — but respect larger windows
+  // (6M, 1A, 5A) so each preset renders different data.
+  const windowDays = meta.frequency === "monthly" ? Math.max(days, 90) : days;
   const end = new Date();
   const start = new Date();
   start.setDate(end.getDate() - windowDays);
-  return fetchSgsRange(sgsCode, start, end);
+  const raw = await fetchSgsRange(meta.sgsCode, start, end);
+  if (!meta.transform) return raw;
+  const transform = meta.transform;
+  return raw.map((p) => ({ date: p.date, value: transform(p.value) }));
 }
 
 export async function getLatestAndHistory(
