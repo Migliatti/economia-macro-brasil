@@ -13,11 +13,11 @@ import type { SeriesPoint } from "@/lib/bcb";
 export const revalidate = 3600;
 
 async function loadData() {
-  // Histórico de 6 meses já cobre o cálculo de delta "vs 6 meses" para Selic/CDI
-  // e dá sparklines ricas para todos os indicadores. Reutilizamos no chart.
+  // Fetch 180 days (6M preset) so the server-side seed matches the chart's
+  // default period exactly — and 180 days covers the Selic/CDI delta window too.
   const historyEntries = await Promise.all(
     INDICATOR_ORDER.map(async (key) => {
-      const data = await getSeriesRange(key, 200);
+      const data = await getSeriesRange(key, 180);
       return [key, data] as const;
     }),
   );

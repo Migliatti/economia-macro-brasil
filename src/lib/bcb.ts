@@ -48,8 +48,10 @@ export async function getSeriesRange(
   days: number,
 ): Promise<SeriesPoint[]> {
   const meta = INDICATORS[key];
-  // For monthly series, extend the window so we capture enough monthly points.
-  const windowDays = meta.frequency === "monthly" ? Math.max(days, 366) : days;
+  // For monthly series keep a minimum of 90 days (~3 data points) so the
+  // chart is never empty on the "30D" preset — but respect larger windows
+  // (6M, 1A, 5A) so each preset renders different data.
+  const windowDays = meta.frequency === "monthly" ? Math.max(days, 90) : days;
   const end = new Date();
   const start = new Date();
   start.setDate(end.getDate() - windowDays);
