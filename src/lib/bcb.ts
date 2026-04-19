@@ -47,13 +47,16 @@ export async function getSeriesRange(
   key: IndicatorKey,
   days: number,
 ): Promise<SeriesPoint[]> {
-  const { sgsCode, frequency } = INDICATORS[key];
+  const meta = INDICATORS[key];
   // For monthly series, extend the window so we capture enough monthly points.
-  const windowDays = frequency === "monthly" ? Math.max(days, 366) : days;
+  const windowDays = meta.frequency === "monthly" ? Math.max(days, 366) : days;
   const end = new Date();
   const start = new Date();
   start.setDate(end.getDate() - windowDays);
-  return fetchSgsRange(sgsCode, start, end);
+  const raw = await fetchSgsRange(meta.sgsCode, start, end);
+  if (!meta.transform) return raw;
+  const transform = meta.transform;
+  return raw.map((p) => ({ date: p.date, value: transform(p.value) }));
 }
 
 export async function getLatestAndHistory(

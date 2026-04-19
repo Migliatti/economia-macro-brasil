@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 type Props = {
   meta: IndicatorMeta;
   latest: SeriesPoint;
-  previous: SeriesPoint | null;
   history: SeriesPoint[];
 };
 
@@ -22,17 +21,44 @@ function formatValue(value: number, unit: IndicatorMeta["unit"]) {
   return formatPct(value);
 }
 
-function computeDelta(latest: number, previous: number, unit: IndicatorMeta["unit"]) {
-  if (unit === "currency-brl") {
-    const pct = ((latest - previous) / previous) * 100;
-    return { pct, abs: latest - previous };
+function findReferencePoint(
+  meta: IndicatorMeta,
+  history: SeriesPoint[],
+): SeriesPoint | null {
+  if (history.length < 2) return null;
+  const latestIdx = history.length - 1;
+  if (meta.delta.kind === "previous-point") {
+    return history[latestIdx - 1];
   }
-  return { pct: latest - previous, abs: latest - previous };
+  // days-ago: walk back to find the first point whose date is <= target
+  const latestDate = new Date(history[latestIdx].date + "T00:00:00");
+  const target = new Date(latestDate);
+  target.setDate(target.getDate() - meta.delta.days);
+  const targetIso = target.toISOString().slice(0, 10);
+  for (let i = latestIdx - 1; i >= 0; i--) {
+    if (history[i].date <= targetIso) return history[i];
+  }
+  // fall back to oldest available point
+  return history[0];
 }
 
-export function IndicatorCard({ meta, latest, previous, history }: Props) {
-  const delta = previous ? computeDelta(latest.value, previous.value, meta.unit) : null;
-  const direction = delta ? (delta.pct > 0 ? "up" : delta.pct < 0 ? "down" : "flat") : "flat";
+function computeDelta(latest: number, ref: number, unit: IndicatorMeta["unit"]) {
+  if (unit === "currency-brl") {
+    return { display: ((latest - ref) / ref) * 100, suffix: "%" };
+  }
+  return { display: latest - ref, suffix: " p.p." };
+}
+
+export function IndicatorCard({ meta, latest, history }: Props) {
+  const reference = findReferencePoint(meta, history);
+  const delta = reference ? computeDelta(latest.value, reference.value, meta.unit) : null;
+  const direction = delta
+    ? delta.display > 0.001
+      ? "up"
+      : delta.display < -0.001
+      ? "down"
+      : "flat"
+    : "flat";
 
   const color =
     direction === "up"
@@ -41,7 +67,8 @@ export function IndicatorCard({ meta, latest, previous, history }: Props) {
       ? "var(--color-down)"
       : "var(--color-flat)";
 
-  const DeltaIcon = direction === "up" ? ArrowUpRight : direction === "down" ? ArrowDownRight : ArrowRight;
+  const DeltaIcon =
+    direction === "up" ? ArrowUpRight : direction === "down" ? ArrowDownRight : ArrowRight;
 
   return (
     <div className="group glass-panel relative flex flex-col gap-3 rounded-xl p-5 transition-all hover:border-[color:var(--border-accent)]">
@@ -64,11 +91,10 @@ export function IndicatorCard({ meta, latest, previous, history }: Props) {
         >
           <DeltaIcon className="h-3 w-3" strokeWidth={2.5} />
           {delta ? (
-            meta.unit === "currency-brl" ? (
-              <span>{formatSignedPct(delta.pct)}</span>
-            ) : (
-              <span>{formatSignedPct(delta.pct)} p.p.</span>
-            )
+            <span>
+              {formatSignedPct(delta.display).replace("%", "")}
+              {delta.suffix}
+            </span>
           ) : (
             <span>—</span>
           )}
@@ -79,18 +105,22 @@ export function IndicatorCard({ meta, latest, previous, history }: Props) {
         <div className="text-3xl font-semibold text-[color:var(--text-primary)] tabular-nums">
           {formatValue(latest.value, meta.unit)}
         </div>
-        {meta.unit !== "currency-brl" && (
-          <div className="mt-0.5 text-[10px] text-[color:var(--text-muted)]">
-            {meta.unit === "percent-annual" ? "% a.a." : "variação mensal"}
-          </div>
-        )}
+        <div className="mt-0.5 text-[10px] text-[color:var(--text-muted)]">
+          {meta.unit === "percent-annual"
+            ? `% a.a. · ${meta.delta.label}`
+            : meta.unit === "percent-monthly"
+            ? `variação mensal · ${meta.delta.label}`
+            : meta.delta.label}
+        </div>
       </div>
 
       <Sparkline data={history} color={color} />
 
       <div className="flex items-center justify-between text-[10px] font-mono text-[color:var(--text-muted)]">
         <span>ref {formatDate(latest.date)}</span>
-        <span className="uppercase tracking-wider">{meta.frequency === "daily" ? "diário" : "mensal"}</span>
+        <span className="uppercase tracking-wider">
+          {meta.frequency === "daily" ? "diário" : "mensal"}
+        </span>
       </div>
     </div>
   );
