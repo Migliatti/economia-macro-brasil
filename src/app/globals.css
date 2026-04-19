@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+
+  --background: #05080d;
+  --bg-gradient-1: #0a1628;
+  --bg-gradient-2: #0f0a1f;
+  --bg-gradient-3: #050a15;
+
+  --foreground: #e6edf5;
+  --text-primary: #e6edf5;
+  --text-secondary: #a1adc1;
+  --text-muted: #5d6b80;
+
+  --panel-bg: rgba(18, 24, 38, 0.55);
+  --panel-border: rgba(120, 145, 195, 0.12);
+  --border-accent: rgba(62, 230, 168, 0.22);
+  --grid-line: rgba(120, 145, 195, 0.1);
+
+  --bg-highlight: rgba(62, 230, 168, 0.06);
+  --btn-active: rgba(120, 145, 195, 0.18);
+  --btn-hover: rgba(120, 145, 195, 0.08);
+  --tooltip-bg: rgba(10, 15, 25, 0.92);
+
+  --color-up: #3ee6a8;
+  --color-down: #ff5a6a;
+  --color-flat: #a1adc1;
+  --bg-up: rgba(62, 230, 168, 0.1);
+  --bg-down: rgba(255, 90, 106, 0.1);
+  --bg-flat: rgba(161, 173, 193, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 0%, var(--bg-gradient-1) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 100%, var(--bg-gradient-2) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 50% 50%, var(--bg-gradient-3) 0%, transparent 70%),
+    var(--background);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 0%, transparent 80%);
+  z-index: 0;
+}
+
+.glass-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 20px 40px -20px rgba(0, 0, 0, 0.5);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
