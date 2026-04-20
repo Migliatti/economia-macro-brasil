@@ -37,6 +37,7 @@ export function HistoricalChart({ initial }: Props) {
     "selic:6m": initial.selic,
     "cdi:6m": initial.cdi,
     "ipca:6m": initial.ipca,
+    "ipca12m:6m": initial.ipca12m,
     "cambio:6m": initial.cambio,
   }));
   const [isPending, startTransition] = useTransition();
@@ -65,6 +66,8 @@ export function HistoricalChart({ initial }: Props) {
       ? "#60a5fa"
       : indicator === "ipca"
       ? "#f59e0b"
+      : indicator === "ipca12m"
+      ? "#fb923c"
       : "#c084fc";
 
   const latest = data[data.length - 1]?.value;
