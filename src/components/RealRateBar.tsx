@@ -8,10 +8,10 @@ type Props = {
 };
 
 // Rough historical context for Brazilian real rates:
-// > 8%  → highly restrictive (rare, only during crises)
-// 4–8%  → restrictive (tightening cycle)
-// 2–4%  → neutral corridor
-// < 2%  → accommodative
+// > 6%  → highly restrictive (rare, only during crises)
+// 3–6%  → restrictive (tightening cycle)
+// 1–3%  → neutral corridor
+// < 1%  → accommodative
 function classify(real: number): { label: string; tone: "restrictive" | "neutral" | "accommodative" } {
   if (real >= 6) return { label: "Juros Reais Altos — política monetária restritiva", tone: "restrictive" };
   if (real >= 3) return { label: "Política monetária contracionista", tone: "restrictive" };
@@ -24,7 +24,7 @@ export function RealRateBar({ selic, ipca12m }: Props) {
   const real = selic - ipca12m;
   const { label, tone } = classify(real);
 
-  const Icon = real > 4 ? TrendingUp : real < 1 ? TrendingDown : Minus;
+  const Icon = real >= 3 ? TrendingUp : real >= 1 ? Minus : TrendingDown;
 
   return (
     <div className="glass-panel rounded-xl px-5 py-4">
