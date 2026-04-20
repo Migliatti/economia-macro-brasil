@@ -1,4 +1,4 @@
-export type IndicatorKey = "selic" | "cdi" | "ipca" | "cambio";
+export type IndicatorKey = "selic" | "cdi" | "ipca" | "ipca12m" | "cambio";
 
 export type IndicatorUnit = "percent-annual" | "percent-monthly" | "currency-brl";
 
@@ -62,7 +62,18 @@ export const INDICATORS: Record<IndicatorKey, IndicatorMeta> = {
     sgsCode: 433,
     unit: "percent-monthly",
     description: "Variação mensal do Índice de Preços ao Consumidor Amplo",
-    context: "Índice oficial de inflação no Brasil, divulgado pelo IBGE. Meta do BC em 2026: 3,00% ± 1,5 p.p.",
+    context: "Índice oficial de inflação no Brasil, divulgado pelo IBGE.",
+    frequency: "monthly",
+    delta: { kind: "previous-point", label: "vs mês anterior" },
+  },
+  ipca12m: {
+    key: "ipca12m",
+    label: "IPCA Acumulado 12M",
+    shortLabel: "IPCA 12M",
+    sgsCode: 13522,
+    unit: "percent-annual",
+    description: "IPCA acumulado nos últimos 12 meses",
+    context: "Principal referência para o regime de metas de inflação. Meta BC para 2026: 3,00% (banda: 1,5% – 4,5%).",
     frequency: "monthly",
     delta: { kind: "previous-point", label: "vs mês anterior" },
   },
@@ -79,4 +90,4 @@ export const INDICATORS: Record<IndicatorKey, IndicatorMeta> = {
   },
 };
 
-export const INDICATOR_ORDER: IndicatorKey[] = ["selic", "cdi", "ipca", "cambio"];
+export const INDICATOR_ORDER: IndicatorKey[] = ["selic", "cdi", "ipca", "ipca12m", "cambio"];
