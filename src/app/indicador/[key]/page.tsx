@@ -225,9 +225,9 @@ export default async function IndicatorDetail({
         <RealRateBar selic={selicLatest} ipca12m={ipca12mLatest} />
       )}
 
-      {/* Chart */}
+      {/* Chart — only pass serializable fields (no transform fn) */}
       <DetailChart
-        meta={meta}
+        meta={{ key: meta.key, unit: meta.unit, shortLabel: meta.shortLabel, label: meta.label }}
         initialMain={series}
         initialIpca12m={histories.ipca12m}
       />

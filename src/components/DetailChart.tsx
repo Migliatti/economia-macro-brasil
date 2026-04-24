@@ -11,9 +11,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { SeriesPoint } from "@/lib/bcb";
+import type { IndicatorKey, IndicatorMeta } from "@/lib/indicators";
 import { formatDate, formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { IndicatorMeta } from "@/lib/indicators";
+
+// Only serializable fields — no function props cross the server/client boundary.
+type MetaProps = {
+  key: IndicatorKey;
+  unit: IndicatorMeta["unit"];
+  shortLabel: string;
+  label: string;
+};
 
 type PeriodPreset = { key: string; label: string; days: number };
 
@@ -39,7 +47,7 @@ function merge(main: SeriesPoint[], ipca12m: SeriesPoint[]): MergedPoint[] {
 }
 
 type Props = {
-  meta: IndicatorMeta;
+  meta: MetaProps;
   initialMain: SeriesPoint[];
   initialIpca12m: SeriesPoint[];
 };
