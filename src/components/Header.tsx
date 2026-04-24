@@ -1,4 +1,5 @@
 import { Activity } from "lucide-react";
+import Link from "next/link";
 import { formatDateTime } from "@/lib/format";
 
 export function Header({ lastUpdate }: { lastUpdate: Date }) {
@@ -13,11 +14,33 @@ export function Header({ lastUpdate }: { lastUpdate: Date }) {
             <div className="font-mono text-[10px] tracking-[0.3em] text-[color:var(--text-muted)]">
               MACRO · BRASIL
             </div>
-            <h1 className="font-mono text-base font-medium text-[color:var(--text-primary)]">
+            <Link href="/" className="font-mono text-base font-medium text-[color:var(--text-primary)] hover:text-[color:var(--color-up)] transition-colors">
               Bússola Macroeconômica
-            </h1>
+            </Link>
           </div>
         </div>
+
+        <nav className="flex items-center gap-1">
+          <Link
+            href="/"
+            className="rounded-md px-3 py-1.5 font-mono text-xs text-[color:var(--text-muted)] hover:bg-[color:var(--btn-hover)] hover:text-[color:var(--text-primary)] transition-colors"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/historico"
+            className="rounded-md px-3 py-1.5 font-mono text-xs text-[color:var(--text-muted)] hover:bg-[color:var(--btn-hover)] hover:text-[color:var(--text-primary)] transition-colors"
+          >
+            Histórico
+          </Link>
+          <Link
+            href="/alertas"
+            className="rounded-md px-3 py-1.5 font-mono text-xs text-[color:var(--text-muted)] hover:bg-[color:var(--btn-hover)] hover:text-[color:var(--text-primary)] transition-colors"
+          >
+            Alertas
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-3 font-mono text-[10px] tracking-wider text-[color:var(--text-muted)]">
           <span className="flex items-center gap-1.5">
             <span className="relative flex h-2 w-2">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Sparkline } from "./Sparkline";
 import type { SeriesPoint } from "@/lib/bcb";
@@ -30,7 +31,6 @@ function findReferencePoint(
   if (meta.delta.kind === "previous-point") {
     return history[latestIdx - 1];
   }
-  // days-ago: walk back to find the first point whose date is <= target
   const latestDate = new Date(history[latestIdx].date + "T00:00:00");
   const target = new Date(latestDate);
   target.setDate(target.getDate() - meta.delta.days);
@@ -38,7 +38,6 @@ function findReferencePoint(
   for (let i = latestIdx - 1; i >= 0; i--) {
     if (history[i].date <= targetIso) return history[i];
   }
-  // fall back to oldest available point
   return history[0];
 }
 
@@ -71,57 +70,59 @@ export function IndicatorCard({ meta, latest, history }: Props) {
     direction === "up" ? ArrowUpRight : direction === "down" ? ArrowDownRight : ArrowRight;
 
   return (
-    <div className="group glass-panel relative flex flex-col gap-3 rounded-xl p-5 transition-all hover:border-[color:var(--border-accent)]">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-[10px] font-mono tracking-[0.2em] text-[color:var(--text-muted)]">
-            {meta.shortLabel}
+    <Link href={`/indicador/${meta.key}`} className="block">
+      <div className="group glass-panel relative flex flex-col gap-3 rounded-xl p-5 transition-all hover:border-[color:var(--border-accent)] cursor-pointer h-full">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-[10px] font-mono tracking-[0.2em] text-[color:var(--text-muted)]">
+              {meta.shortLabel}
+            </div>
+            <div className="mt-1 text-sm font-medium text-[color:var(--text-primary)]">
+              {meta.label}
+            </div>
           </div>
-          <div className="mt-1 text-sm font-medium text-[color:var(--text-primary)]">
-            {meta.label}
+          <div
+            className={cn(
+              "flex items-center gap-1 rounded-md px-2 py-1 font-mono text-xs",
+              direction === "up" && "bg-[color:var(--bg-up)] text-[color:var(--color-up)]",
+              direction === "down" && "bg-[color:var(--bg-down)] text-[color:var(--color-down)]",
+              direction === "flat" && "bg-[color:var(--bg-flat)] text-[color:var(--color-flat)]",
+            )}
+          >
+            <DeltaIcon className="h-3 w-3" strokeWidth={2.5} />
+            {delta ? (
+              <span>
+                {formatSignedPct(delta.display).replace("%", "")}
+                {delta.suffix}
+              </span>
+            ) : (
+              <span>—</span>
+            )}
           </div>
         </div>
-        <div
-          className={cn(
-            "flex items-center gap-1 rounded-md px-2 py-1 font-mono text-xs",
-            direction === "up" && "bg-[color:var(--bg-up)] text-[color:var(--color-up)]",
-            direction === "down" && "bg-[color:var(--bg-down)] text-[color:var(--color-down)]",
-            direction === "flat" && "bg-[color:var(--bg-flat)] text-[color:var(--color-flat)]",
-          )}
-        >
-          <DeltaIcon className="h-3 w-3" strokeWidth={2.5} />
-          {delta ? (
-            <span>
-              {formatSignedPct(delta.display).replace("%", "")}
-              {delta.suffix}
-            </span>
-          ) : (
-            <span>—</span>
-          )}
+
+        <div className="font-mono">
+          <div className="text-3xl font-semibold text-[color:var(--text-primary)] tabular-nums">
+            {formatValue(latest.value, meta.unit)}
+          </div>
+          <div className="mt-0.5 text-[10px] text-[color:var(--text-muted)]">
+            {meta.unit === "percent-annual"
+              ? `% a.a. · ${meta.delta.label}`
+              : meta.unit === "percent-monthly"
+              ? `variação mensal · ${meta.delta.label}`
+              : meta.delta.label}
+          </div>
+        </div>
+
+        <Sparkline data={history} color={color} />
+
+        <div className="flex items-center justify-between text-[10px] font-mono text-[color:var(--text-muted)]">
+          <span>ref {formatDate(latest.date)}</span>
+          <span className="uppercase tracking-wider">
+            {meta.frequency === "daily" ? "diário" : "mensal"}
+          </span>
         </div>
       </div>
-
-      <div className="font-mono">
-        <div className="text-3xl font-semibold text-[color:var(--text-primary)] tabular-nums">
-          {formatValue(latest.value, meta.unit)}
-        </div>
-        <div className="mt-0.5 text-[10px] text-[color:var(--text-muted)]">
-          {meta.unit === "percent-annual"
-            ? `% a.a. · ${meta.delta.label}`
-            : meta.unit === "percent-monthly"
-            ? `variação mensal · ${meta.delta.label}`
-            : meta.delta.label}
-        </div>
-      </div>
-
-      <Sparkline data={history} color={color} />
-
-      <div className="flex items-center justify-between text-[10px] font-mono text-[color:var(--text-muted)]">
-        <span>ref {formatDate(latest.date)}</span>
-        <span className="uppercase tracking-wider">
-          {meta.frequency === "daily" ? "diário" : "mensal"}
-        </span>
-      </div>
-    </div>
+    </Link>
   );
 }
