@@ -203,13 +203,7 @@ export function OverlayChart({ initial }: Props) {
               dataKey="selic"
               stroke="var(--color-up)"
               strokeWidth={2}
-              dot={(props: any) => {
-                const { cx, cy, index } = props;
-                if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
-                const prev = data[index - 1].selic; const curr = data[index].selic;
-                if (prev === null || curr === null || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
-                return <circle cx={cx} cy={cy} r={3} fill="var(--color-up)" stroke="#05080d" strokeWidth={1.5} />;
-              }}
+              dot={false}
               activeDot={{ r: 6, fill: "var(--color-up)", stroke: "#05080d", strokeWidth: 2, style: { filter: "drop-shadow(0 0 6px var(--color-up))" } }}
               connectNulls
               isAnimationActive={false}
@@ -220,13 +214,7 @@ export function OverlayChart({ initial }: Props) {
               stroke="#60a5fa"
               strokeWidth={1.5}
               strokeDasharray="5 3"
-              dot={(props: any) => {
-                const { cx, cy, index } = props;
-                if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
-                const prev = data[index - 1].cdi; const curr = data[index].cdi;
-                if (prev === null || curr === null || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
-                return <circle cx={cx} cy={cy} r={3} fill="#60a5fa" stroke="#05080d" strokeWidth={1.5} />;
-              }}
+              dot={false}
               activeDot={{ r: 6, fill: "#60a5fa", stroke: "#05080d", strokeWidth: 2, style: { filter: "drop-shadow(0 0 6px #60a5fa)" } }}
               connectNulls
               isAnimationActive={false}

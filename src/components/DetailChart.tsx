@@ -196,13 +196,17 @@ export function DetailChart({ meta, initialMain, initialIpca12m }: Props) {
               dataKey="main"
               stroke="var(--color-up)"
               strokeWidth={2}
-              dot={(props: any) => {
-                const { cx, cy, index } = props;
-                if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
-                const prev = data[index - 1].main; const curr = data[index].main;
-                if (prev === null || curr === null || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
-                return <circle cx={cx} cy={cy} r={3} fill="var(--color-up)" stroke="#05080d" strokeWidth={1.5} />;
-              }}
+              dot={
+                meta.key === "ipca" || meta.key === "ipca12m"
+                  ? (props: any) => {
+                      const { cx, cy, index } = props;
+                      if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
+                      const prev = data[index - 1].main; const curr = data[index].main;
+                      if (prev === null || curr === null || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
+                      return <circle cx={cx} cy={cy} r={3} fill="var(--color-up)" stroke="#05080d" strokeWidth={1.5} />;
+                    }
+                  : false
+              }
               activeDot={{ r: 6, fill: "var(--color-up)", stroke: "#05080d", strokeWidth: 2, style: { filter: "drop-shadow(0 0 6px var(--color-up))" } }}
               connectNulls
               isAnimationActive={false}

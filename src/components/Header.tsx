@@ -33,12 +33,6 @@ export function Header({ lastUpdate }: { lastUpdate: Date }) {
           >
             Histórico
           </Link>
-          <Link
-            href="/alertas"
-            className="rounded-md px-3 py-1.5 font-mono text-xs text-[color:var(--text-muted)] hover:bg-[color:var(--btn-hover)] hover:text-[color:var(--text-primary)] transition-colors"
-          >
-            Alertas
-          </Link>
         </nav>
 
         <div className="flex items-center gap-3 font-mono text-[10px] tracking-wider text-[color:var(--text-muted)]">

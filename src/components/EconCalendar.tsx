@@ -8,18 +8,62 @@ type CalEvent = {
   kind: "copom" | "inflation" | "focus" | "gdp";
 };
 
-// Static upcoming scheduled releases for 2026. Dates are approximate
-// (IBGE typically releases IPCA around the 9th–12th of the following month).
-const STATIC_EVENTS: CalEvent[] = [
-  { date: "2026-04-28", label: "Relatório Focus · BCB", kind: "focus" },
-  { date: "2026-05-12", label: "IPCA abril · IBGE", kind: "inflation" },
-  { date: "2026-05-05", label: "Relatório Focus · BCB", kind: "focus" },
-  { date: "2026-06-09", label: "IPCA maio · IBGE", kind: "inflation" },
-  { date: "2026-06-16", label: "Relatório Focus · BCB", kind: "focus" },
-  { date: "2026-07-09", label: "IPCA junho · IBGE", kind: "inflation" },
-  { date: "2026-05-28", label: "PIB 1º tri 2026 · IBGE", kind: "gdp" },
-  { date: "2026-09-01", label: "PIB 2º tri 2026 · IBGE", kind: "gdp" },
+const MONTH_PT = [
+  "janeiro","fevereiro","março","abril","maio","junho",
+  "julho","agosto","setembro","outubro","novembro","dezembro",
 ];
+
+function isoDate(y: number, m: number, d: number): string {
+  return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+function nextMonday(from: Date): Date {
+  const d = new Date(from);
+  d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7));
+  return d;
+}
+
+function generateDynamicEvents(today: Date): CalEvent[] {
+  const todayIso = today.toISOString().slice(0, 10);
+  const year = today.getFullYear();
+  const events: CalEvent[] = [];
+
+  // IPCA: released ~9th of the following month (IBGE)
+  for (let i = 0; i < 5; i++) {
+    const rawMonth = today.getMonth() + i;
+    const refYear = year + Math.floor(rawMonth / 12);
+    const refMonth = rawMonth % 12;
+    const releaseYear = refMonth === 11 ? refYear + 1 : refYear;
+    const releaseMonth = refMonth === 11 ? 0 : refMonth + 1;
+    const date = isoDate(releaseYear, releaseMonth, 9);
+    if (date > todayIso) {
+      events.push({ date, label: `IPCA ${MONTH_PT[refMonth]} · IBGE`, kind: "inflation" });
+    }
+  }
+
+  // Focus Report: every Monday (BCB Market Readout)
+  let monday = nextMonday(today);
+  for (let i = 0; i < 5; i++) {
+    events.push({ date: monday.toISOString().slice(0, 10), label: "Relatório Focus · BCB", kind: "focus" });
+    const next = new Date(monday);
+    next.setDate(next.getDate() + 7);
+    monday = next;
+  }
+
+  // PIB: approximate IBGE quarterly releases (Jun/Sep/Dec/Mar)
+  const pibReleases: [string, string][] = [
+    [isoDate(year, 5, 3),     `PIB 1º tri ${year} · IBGE`],
+    [isoDate(year, 8, 2),     `PIB 2º tri ${year} · IBGE`],
+    [isoDate(year, 11, 2),    `PIB 3º tri ${year} · IBGE`],
+    [isoDate(year + 1, 2, 3), `PIB 4º tri ${year} · IBGE`],
+    [isoDate(year + 1, 5, 3), `PIB 1º tri ${year + 1} · IBGE`],
+  ];
+  for (const [date, label] of pibReleases) {
+    if (date > todayIso) events.push({ date, label, kind: "gdp" });
+  }
+
+  return events;
+}
 
 const KIND_META: Record<
   CalEvent["kind"],
@@ -55,18 +99,19 @@ function daysUntil(dateIso: string): number {
 }
 
 export function EconCalendar() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date();
+  const todayIso = today.toISOString().slice(0, 10);
 
   const copomEvents: CalEvent[] = COPOM_MEETINGS.filter(
-    (m) => m.date >= today,
+    (m) => m.date >= todayIso,
   ).map((m) => ({
     date: m.date,
     label: `Copom #${m.number} · decisão`,
     kind: "copom",
   }));
 
-  const all = [...copomEvents, ...STATIC_EVENTS]
-    .filter((e) => e.date >= today)
+  const all = [...copomEvents, ...generateDynamicEvents(today)]
+    .filter((e) => e.date >= todayIso)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 8);
 
@@ -106,7 +151,7 @@ export function EconCalendar() {
       </ul>
 
       <div className="mt-3 border-t border-[color:var(--grid-line)] pt-3 font-mono text-[10px] text-[color:var(--text-muted)]">
-        COPOM · Focus · IBGE · BCB
+        COPOM · Focus · IBGE · BCB · datas aproximadas
       </div>
     </div>
   );

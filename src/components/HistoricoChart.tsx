@@ -274,14 +274,18 @@ export function HistoricoChart({ initial }: Props) {
                 stroke={COLORS[k]}
                 strokeWidth={k === "selic" ? 2 : 1.5}
                 strokeDasharray={k === "cdi" ? "5 3" : undefined}
-                dot={(props: any) => {
-                  const { cx, cy, index } = props;
-                  if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
-                  const prev = data[index - 1][k];
-                  const curr = data[index][k];
-                  if (prev === undefined || curr === undefined || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
-                  return <circle cx={cx} cy={cy} r={3} fill={COLORS[k]} stroke="#05080d" strokeWidth={1.5} />;
-                }}
+                dot={
+                  k === "ipca" || k === "ipca12m"
+                    ? (props: any) => {
+                        const { cx, cy, index } = props;
+                        if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
+                        const prev = data[index - 1][k];
+                        const curr = data[index][k];
+                        if (prev === undefined || curr === undefined || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
+                        return <circle cx={cx} cy={cy} r={3} fill={COLORS[k]} stroke="#05080d" strokeWidth={1.5} />;
+                      }
+                    : false
+                }
                 activeDot={{ r: 6, fill: COLORS[k], stroke: "#05080d", strokeWidth: 2, style: { filter: `drop-shadow(0 0 6px ${COLORS[k]})` } }}
                 connectNulls
                 isAnimationActive={false}
