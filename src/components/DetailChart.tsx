@@ -196,7 +196,14 @@ export function DetailChart({ meta, initialMain, initialIpca12m }: Props) {
               dataKey="main"
               stroke="var(--color-up)"
               strokeWidth={2}
-              dot={false}
+              dot={(props: any) => {
+                const { cx, cy, index } = props;
+                if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
+                const prev = data[index - 1].main; const curr = data[index].main;
+                if (prev === null || curr === null || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
+                return <circle cx={cx} cy={cy} r={3} fill="var(--color-up)" stroke="#05080d" strokeWidth={1.5} />;
+              }}
+              activeDot={{ r: 6, fill: "var(--color-up)", stroke: "#05080d", strokeWidth: 2, style: { filter: "drop-shadow(0 0 6px var(--color-up))" } }}
               connectNulls
               isAnimationActive={false}
             />
@@ -207,7 +214,14 @@ export function DetailChart({ meta, initialMain, initialIpca12m }: Props) {
                 stroke="#fb923c"
                 strokeWidth={1.5}
                 strokeDasharray="5 3"
-                dot={false}
+                dot={(props: any) => {
+                  const { cx, cy, index } = props;
+                  if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
+                  const prev = data[index - 1].ipca12m; const curr = data[index].ipca12m;
+                  if (prev === null || curr === null || Math.abs(curr - prev) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
+                  return <circle cx={cx} cy={cy} r={3} fill="#fb923c" stroke="#05080d" strokeWidth={1.5} />;
+                }}
+                activeDot={{ r: 6, fill: "#fb923c", stroke: "#05080d", strokeWidth: 2, style: { filter: "drop-shadow(0 0 6px #fb923c)" } }}
                 connectNulls
                 isAnimationActive={false}
               />

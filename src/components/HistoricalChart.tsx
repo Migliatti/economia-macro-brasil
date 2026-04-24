@@ -195,6 +195,13 @@ export function HistoricalChart({ initial }: Props) {
               stroke={color}
               strokeWidth={2}
               fill={`url(#fill-${indicator})`}
+              dot={(props: any) => {
+                const { cx, cy, index } = props;
+                if (index === 0 || !data[index - 1]) return <circle cx={cx} cy={cy} r={0} />;
+                if (Math.abs(data[index].value - data[index - 1].value) < 0.001) return <circle cx={cx} cy={cy} r={0} />;
+                return <circle cx={cx} cy={cy} r={3} fill={color} stroke="#05080d" strokeWidth={1.5} />;
+              }}
+              activeDot={{ r: 6, fill: color, stroke: "#05080d", strokeWidth: 2, style: { filter: `drop-shadow(0 0 6px ${color})` } }}
               isAnimationActive={false}
             />
           </AreaChart>
