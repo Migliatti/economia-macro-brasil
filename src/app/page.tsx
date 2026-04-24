@@ -1,7 +1,9 @@
 import { Header } from "@/components/Header";
 import { IndicatorCard } from "@/components/IndicatorCard";
 import { HistoricalChart } from "@/components/HistoricalChart";
+import { OverlayChart } from "@/components/OverlayChart";
 import { CopomPanel } from "@/components/CopomPanel";
+import { EconCalendar } from "@/components/EconCalendar";
 import { RealRateBar } from "@/components/RealRateBar";
 import { getSeriesRange } from "@/lib/bcb";
 import {
@@ -14,7 +16,6 @@ import type { SeriesPoint } from "@/lib/bcb";
 export const revalidate = 3600;
 
 async function loadData() {
-  // 180 days = default 6M chart seed and covers Selic/CDI delta window.
   const historyEntries = await Promise.all(
     INDICATOR_ORDER.map(async (key) => {
       const data = await getSeriesRange(key, 180);
@@ -37,9 +38,10 @@ export default async function Home() {
   const ipca12mLatest = histories.ipca12m[histories.ipca12m.length - 1]?.value ?? 0;
 
   return (
-    <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-5 p-5 md:p-8">
+    <div className="relative z-10 mx-auto flex max-w-[1680px] flex-col gap-5 p-5 md:p-8">
       <Header lastUpdate={new Date()} />
 
+      {/* KPI strip */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {INDICATOR_ORDER.map((key) => {
           const series = histories[key];
@@ -57,10 +59,28 @@ export default async function Home() {
 
       <RealRateBar selic={selicLatest} ipca12m={ipca12mLatest} />
 
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
-        <HistoricalChart initial={histories} />
+      {/* Cockpit: overlay chart + copom + calendar */}
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr] xl:grid-cols-[2fr_1fr_1fr]">
+        <OverlayChart
+          initial={{
+            selic: histories.selic,
+            cdi: histories.cdi,
+            ipca12m: histories.ipca12m,
+          }}
+        />
         <CopomPanel selicSeries={histories.selic} />
+        <div className="hidden xl:block">
+          <EconCalendar />
+        </div>
       </section>
+
+      {/* Agenda (visible below cockpit on smaller screens) */}
+      <div className="xl:hidden">
+        <EconCalendar />
+      </div>
+
+      {/* Historical drill-down */}
+      <HistoricalChart initial={histories} />
 
       <footer className="mt-4 font-mono text-[10px] tracking-wider text-[color:var(--text-muted)]">
         <p>
